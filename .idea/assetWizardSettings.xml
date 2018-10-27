@@ -14,8 +14,8 @@
                         <option name="values">
                           <map>
                             <entry key="assetSourceType" value="FILE" />
-                            <entry key="outputName" value="save_icon" />
-                            <entry key="sourceFile" value="C:\Users\Janeth Delgado\Desktop\android apps\FlashcardApp\iconmonstr-check-mark-8.svg" />
+                            <entry key="outputName" value="edit_icon" />
+                            <entry key="sourceFile" value="C:\Users\Janeth Delgado\Desktop\android apps\FlashcardApp\iconmonstr-edit-11.svg" />
                           </map>
                         </option>
                       </PersistentState>
