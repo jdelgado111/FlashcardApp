@@ -8,14 +8,29 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.util.List;
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
     boolean isShowingOptions = true;
+    FlashcardDatabase flashcardDatabase;
+    List<Flashcard> allFlashcards;
+    int currentCardDisplayedIndex = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        flashcardDatabase = new FlashcardDatabase(getApplicationContext());
+        allFlashcards = flashcardDatabase.getAllCards();
+
+        if (allFlashcards != null && allFlashcards.size() > 0) {
+            ((TextView) findViewById(R.id.flashcard_question)).setText(allFlashcards.get(0).getQuestion());
+            ((TextView) findViewById(R.id.flashcard_answer)).setText(allFlashcards.get(0).getAnswer());
+        }
+
 
         findViewById(R.id.flashcard_question).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,6 +113,53 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.startActivityForResult(intent, 100);
             }
         });
+
+        findViewById(R.id.nextCard).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // advance our pointer index so we can show the next card
+                //currentCardDisplayedIndex++;
+                currentCardDisplayedIndex = getRandomNumber(0, allFlashcards.size());
+
+                // make sure we don't get an IndexOutOfBoundsError if we are viewing the last indexed card in our list
+                if (currentCardDisplayedIndex > allFlashcards.size() - 1)
+                    currentCardDisplayedIndex = 0;
+
+                // set the question and answer TextViews with data from the database
+                ((TextView) findViewById(R.id.flashcard_question)).setText(allFlashcards.get(currentCardDisplayedIndex).getQuestion());
+                ((TextView) findViewById(R.id.flashcard_answer)).setText(allFlashcards.get(currentCardDisplayedIndex).getAnswer());
+
+                findViewById(R.id.flashcard_answer).setVisibility(View.INVISIBLE);
+                findViewById(R.id.flashcard_question).setVisibility(View.VISIBLE);
+            }
+        });
+
+        findViewById(R.id.deleteCard).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                flashcardDatabase.deleteCard(((TextView)findViewById(R.id.flashcard_question)).getText().toString());
+                allFlashcards = flashcardDatabase.getAllCards();
+
+                currentCardDisplayedIndex++;
+                if (currentCardDisplayedIndex > allFlashcards.size() - 1)
+                    currentCardDisplayedIndex = 0;
+
+                if (allFlashcards.isEmpty()) {
+                    String question = "No cards left!";
+                    String answer = "Add a card!";
+
+                    ((TextView)findViewById(R.id.flashcard_question)).setText(question);
+                    ((TextView)findViewById(R.id.flashcard_answer)).setText(answer);
+
+                    //flashcardDatabase.insertCard(new Flashcard(question, answer));
+                    //allFlashcards = flashcardDatabase.getAllCards();
+                }
+                else {
+                    ((TextView) findViewById(R.id.flashcard_question)).setText(allFlashcards.get(currentCardDisplayedIndex).getQuestion());
+                    ((TextView) findViewById(R.id.flashcard_answer)).setText(allFlashcards.get(currentCardDisplayedIndex).getAnswer());
+                }
+            }
+        });
     }
 
     @Override
@@ -118,7 +180,14 @@ public class MainActivity extends AppCompatActivity {
             }
 
             Snackbar.make(findViewById(android.R.id.content), "Card successfully created", Snackbar.LENGTH_LONG).show();
+
+            flashcardDatabase.insertCard(new Flashcard(question, answer));
+            allFlashcards = flashcardDatabase.getAllCards();
         }
     }
 
+    public int getRandomNumber(int minNumber, int maxNumber){
+        Random rand = new Random();
+        return rand.nextInt((maxNumber - minNumber) + 1) + minNumber;
+    }
 }
